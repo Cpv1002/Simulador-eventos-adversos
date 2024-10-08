@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Riesgo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #e4fbfb; /* Fondo modificado */
+            text-align: center;
+        }
+        h1, h2 {
+            margin: 10px 0;
+            font-size: 28px; /* Aumentado el tamaño de letra */
+        }
+        #bienvenida, #simulador, #agradecimiento {
+            display: none;
+            width: 100%;
+        }
+        #bienvenida {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #bbdefb;
+            position: absolute;
+            width: 100%;
+            top: 0;
+            left: 0;
+        }
+        #simulador {
+            display: none;
+        }
+        button {
+            padding: 12px 18px; /* Aumentado el tamaño del botón */
+            background-color: #00796b;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px;
+            font-size: 18px; /* Aumentado el tamaño de letra */
+        }
+        button:hover {
+            background-color: #004d40;
+        }
+        #resultado {
+            margin-top: 20px;
+            font-size: 28px; /* Aumentado el tamaño de letra */
+            font-weight: bold;
+            color: #d32f2f;
+        }
+        table {
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        td {
+            padding: 8px;
+            font-size: 18px; /* Aumentado el tamaño de letra */
+        }
+        #logo {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <img id="logo" src="LOGO_UDCA.jpg" alt="Logo UDCA" width="100"> <!-- Asegúrate de que la imagen esté en la misma carpeta que tu archivo HTML -->
+
+    <div id="bienvenida">
+        <h1>BIENVENIDOS A LA SIMULACIÓN</h1>
+        <button onclick="mostrarSimulador()">Iniciar Simulador</button>
+    </div>
+
+    <div id="simulador">
+        <h1>UNIVERSIDAD DE CIENCIAS APLICADAS Y AMBIENTALES U.D.C.A.</h1>
+        <h2>FACULTAD DE CIENCIAS DE LA SALUD</h2>
+        <h2>PROGRAMA DE ENFERMERÍA</h2>
+        
+        <label for="tipoEvento">Selecciona el tipo de evento:</label>
+        <select id="tipoEvento" onchange="mostrarVariables()">
+            <option value="">-- Selecciona --</option>
+            <option value="2">Tipo 2</option>
+            <option value="3">Tipo 3</option>
+            <option value="4">Tipo 4</option>
+            <option value="15">Tipo 15</option>
+        </select>
+
+        <div id="variables" style="text-align: center;">
+            <h2 style="display: none;">Variables</h2>
+            <table id="tablaVariables"></table>
+            <button onclick="calcularRiesgo()">Calcular Riesgo</button>
+            <div id="resultado"></div>
+            <button onclick="regresar()">⏮️ Regresar</button>
+            <button onclick="mostrarAgradecimiento()">Finalizar ⏭️</button>
+        </div>
+    </div>
+
+    <div id="agradecimiento">
+        <h1 style="text-align: center;">MUCHAS GRACIAS 😊</h1>
+        <button onclick="mostrarSimulador()">Volver al Simulador</button>
+    </div>
+
+    <script>
+        const variablesPorTipo = {
+            2: [
+                { name: 'masculino' },
+                { name: 'alto_riesgo' },
+                { name: 'salas_cx' },
+                { name: 'consulta' },
+                { name: 'extrainstitucional' },
+                { name: 'hospitalizacion' },
+                { name: 'pediatria' },
+                { name: 'servicio_covid' },
+                { name: 'sala_partos' },
+                { name: 'uci_adultos' },
+                { name: 'salud_mental' },
+                { name: 'uci_neonatal' },
+                { name: 'urgencias' }
+            ],
+            3: [
+                { name: 'masculino' },
+                { name: 'mayoria_edad' },
+                { name: 'salas_cx' },
+                { name: 'extrainstitucional' },
+                { name: 'hospitalizacion' },
+                { name: 'pediatria' },
+                { name: 'servicio_covid' },
+                { name: 'sala_partos' },
+                { name: 'uci_adultos' },
+                { name: 'salud_mental' },
+                { name: 'urgencias' }
+            ],
+            4: [
+                { name: 'salas_cx' },
+                { name: 'consulta_externa' },
+                { name: 'extrainstitucional' },
+                { name: 'otros' },
+                { name: 'pediatria' },
+                { name: 'servicio_covid' },
+                { name: 'uci_adultos' },
+                { name: 'unidad_mental' },
+                { name: 'uci_neonatal' },
+                { name: 'urgencias' }
+            ],
+            15: [
+                { name: 'masculino' },
+                { name: 'alto_riesgo' },
+                { name: 'salas_cx' },
+                { name: 'consulta_externa' },
+                { name: 'extrainstitucional' },
+                { name: 'hospitalizacion' },
+                { name: 'otros' },
+                { name: 'pediatria' },
+                { name: 'servicio_covid' },
+                { name: 'sala_partos' },
+                { name: 'unidad_mental' },
+                { name: 'uci_neonatal' }
+            ]
+        };
+
+        function mostrarSimulador() {
+            document.getElementById('bienvenida').style.display = 'none';
+            document.getElementById('simulador').style.display = 'block';
+        }
+
+        function mostrarVariables() {
+            const tipoEvento = document.getElementById('tipoEvento').value;
+            const tablaVariables = document.getElementById('tablaVariables');
+            tablaVariables.innerHTML = '';
+
+            if (tipoEvento) {
+                const variables = variablesPorTipo[tipoEvento];
+                variables.forEach(variable => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${variable.name}</td>
+                        <td>
+                            <select name="${variable.name}">
+                                <option value="0">No</option>
+                                <option value="1">Sí</option>
+                            </select>
+                        </td>
+                    `;
+                    tablaVariables.appendChild(row);
+                });
+                document.querySelector('#variables h2').style.display = 'block';
+                document.getElementById('variables').style.display = 'block';
+            } else {
+                document.getElementById('variables').style.display = 'none';
+            }
+        }
+
+        function calcularRiesgo() {
+            const tipo = document.getElementById('tipoEvento').value;
+            const variables = variablesPorTipo[tipo];
+            let suma = 0;
+            const betaValues = {
+                2: [0.19, -0.39, 0.4, -0.31, 0.11, 0.46, 0.96, -0.3, -0.88, -0.22, 1.43, -0.99, 0.22],
+                3: [0.14, 0.43, 1.51, -0.78, 2.19, 2.06, 3.26, 1.37, 1.07, 2.4, 2.23],
+                4: [0.55, -2.76, -0.49, 0.94, -0.83, 1.17, 0.25, -2.5, 2.14, -1.99],
+                15: [-0.33, 0.38, -1.02, -0.28, 0.59, -1.38, -2.62, -1.66, 2.67, -3.12, -0.33, -0.37]
+            };
+
+            variables.forEach((variable, index) => {
+                const valor = document.querySelector(`select[name="${variable.name}"]`).value;
+                suma += valor * betaValues[tipo][index];
+            });
+
+            const riesgoFinal = 1 / (1 + Math.exp(-suma)) * 100;
+            document.getElementById('resultado').innerText = `Riesgo Tipo ${tipo}: ${riesgoFinal.toFixed(2)}%`;
+        }
+
+        function regresar() {
+            document.getElementById('simulador').style.display = 'none';
+            document.getElementById('bienvenida').style.display = 'flex';
+        }
+
+        function mostrarAgradecimiento() {
+            document.getElementById('simulador').style.display = 'none';
+            document.getElementById('agradecimiento').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
